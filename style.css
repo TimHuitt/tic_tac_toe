@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Playpen+Sans&display=swap');
+
 * {
   box-sizing: border-box;
+  user-select: none;
 }
 body {
   width: 100%;
@@ -12,16 +15,35 @@ body {
   width: 80vmin;
   height: 80vmin;
 }
-.player-container {
+.player {
+  display: flex;
   position: absolute;
   top: 0;
-  height: 60px;
+  height: 8vmin;
   width: 60%;
-  background: #333;
+  background: #222;
   box-shadow: inset 0 0 10px #000;
   border-radius: 2rem;
 }
-main .player-container:last-child {
+.pieces {
+  display: flex;
+  height: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0 0 0 5%;
+  font-size: 5vmin;
+  letter-spacing: 3vmin;
+}
+
+.pieces.x.initial {
+  margin-top: 50px;
+}
+
+div > span {
+  font-family: 'Playpen Sans', cursive;
+
+}
+main .player:last-child {
   top: auto;
   bottom: 0;
 }
@@ -41,13 +63,37 @@ main {
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
   gap: 3%;
+  transition: all .5s;
 }
 .cell {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 4vmin;
+  border: 3px solid #111;
   border-radius: 1rem;
   background: #555;
   box-shadow: 5px 5px 5px #111;
-  transition: transform .5s;
+  transition: all .5s;
 }
+
+.cell.selected {
+  font-size: 14vmin;
+}
+
+.game-container.initial {
+  position: absolute;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  height: 40%;
+}
+.cell.initial {
+  display: none;
+}
+
 .cell:hover {
   border: 8px solid #a651a3;
   background: #111;
@@ -59,6 +105,33 @@ main {
   border: 8px solid #733871;
   background: #444;
 }
+
+.cell > .x,
+.cell > .o {
+  position: absolute;
+  font-family: 'Playpen Sans', cursive;
+  transition: font-size 1s
+}
+
+
+.x {
+  color: rgba(230, 7, 7, 0.7);
+  text-shadow: 0 0 20px rgba(218, 14, 14, 0.7);
+}
+.o {
+  color: rgba(38, 38, 207, 0.7);
+  text-shadow: 0 0 20px rgba(39, 39, 123, 0.7);
+}
+
+.wins {
+  position:absolute;
+  right: 0;
+  color: #aaa;
+  font-size: 8vmin;
+}
+
+
+
 .center {
   display: flex;
   justify-content: center;
