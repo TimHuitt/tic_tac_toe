@@ -16,7 +16,7 @@ const gameState = {
 
 //*----- state variables -----*//
 
-let turn; // 0 or 1 / red or blue
+let turn; // -1 / 0 / 1 (= X / empty / O = red / empty / blue)
 let xScore;
 let oScore;
 let xLeft;
@@ -160,7 +160,7 @@ function renderCurrentPlayer(turn) {
 
 // update selected cell
 function renderSelectedCell(cell) {
-  const currentColor = (Math.floor(turn)) ? "red" : "blue"
+  const currentColor = (turn < 0) ? "red" : "blue"
   
   // determine color by turn
   // timing for animations
@@ -177,15 +177,19 @@ function renderSelectedCell(cell) {
 //*----- handlers -----*//
 
 function handleTurn(cell, event) {
+  const currentPiece = (turn > 0) ? 'X' : 'O'
+  const currentClass = (turn > 0) ? 'x' : 'o'
   setTurn()
 
   // add x or o to selected cell
   if (cell.querySelector('div') === null) {
     const newEl = document.createElement('div')
-    newEl.classList.add('x')
-    newEl.innerText = 'X'
+    newEl.classList.add(currentClass)
+    newEl.innerText = currentPiece
     cell.appendChild(newEl)
   }
+
+
   
   renderSelectedCell(cell)
 }
@@ -195,11 +199,12 @@ function setTurn() {
   // if first round, select random player
   if (!turn) turn = Math.random()
 
-  // else select opposite player
-  if (!(Math.floor(turn))) {
-    turn = (turn <.5) ? -1 : 1
-  } else {
-    turn = (turn > 0) ? -1 : 1
-  }
+  // determine next turn to set up
+  // if turn is -1 (x), 1 (o)
+  // if turn is 1 (o), -1 (x)
+  // if turn is 0-.49 (rng), -1 (x)
+  // if turn is .5-.99 (rng), 1 (o)
+  turn = (turn > .5) ? -1 : 1
+  
   renderCurrentPlayer(turn)
 }
