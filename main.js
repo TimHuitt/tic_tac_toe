@@ -215,6 +215,7 @@ function renderWinner(winner) {
     default:
       console.log('DRAW!')
       main.classList.add('draw')
+      break
   }
   setTimeout(() => {
     setGameEnd(winner)
@@ -314,8 +315,7 @@ function handleBoard() {
 
   // create a copy of winning states for alteration 
   let winState = [...winPos]
-  let boardSum = 0
-
+  let winner = ''
   // add current gamestate values to matching winstate elements
   // loop each winning state block
   for (const block of winState) {
@@ -341,26 +341,31 @@ function handleBoard() {
     for (cell of block) {
       sum += cell
     }
-    console.log(sum)
+
     // if winning condition matched
       // 3 = o, -3 = x
     if (sum === 3 || sum === -3) {
       const winner = (turn > 0) ? 'o' : 'x'
       renderWinner(winner)
+      return
     // else draw if all cells filled
-    } else if (getBoardSum() === 9) {
-      renderWinner('draw')
-    }
+    } 
 
-    // calculate occupied cells
-    function getBoardSum() {
-      let boardSum = 0
-      for (const val in gameState) {
-        if (gameState[val] !== 0) {
-          boardSum += 1
-        }
-      }
-      return(boardSum)
+    
+  }
+  if (getBoardSum() === 9 && !winner) {
+    renderWinner('draw')
+    return
+  }
+}
+
+// calculate occupied cells
+function getBoardSum() {
+  let boardSum = 0
+  for (const val in gameState) {
+    if (gameState[val] !== 0) {
+      boardSum += 1
     }
   }
+  return(boardSum)
 }
