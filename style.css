@@ -107,20 +107,24 @@ main::after {
   color: white;
   width: 100%;
   height: 100%;
-  font-size: 15vmin;
+  font-size: 0;
   -webkit-text-stroke: .75vmin black;
   justify-content: center;
   align-items: center;
   pointer-events: none;
+  transition: all 1s;
 }
 main.x:after {
-  content: "X WINS!"
+  content: "X WINS!";
+  font-size: 15vmin;
 }
 main.o:after {
-  content: "O WINS!"
+  content: "O WINS!";
+  font-size: 15vmin;
 }
 main.draw:after {
-  content: "DRAW!"
+  content: "DRAW!";
+  font-size: 15vmin;
 }
 
 main .players:last-child {
@@ -132,7 +136,7 @@ main.flicker {
   animation: flicker .75s ease-in-out;
 }
 main.winner {
-  animation: winner 2s ease-in-out 3;
+  animation: winner 2s ease-in-out 2;
 }
 
 .game-container {
@@ -166,6 +170,12 @@ main.winner {
 .cells.selected {
   background: var(--darkest);
   font-size: 14vmin;
+}
+.cells.selectedx {
+  border-color: var(--red);
+}
+cells.selectedo {
+  border-color: var(--blue)
 }
 .cells.initial {
   display: none;
