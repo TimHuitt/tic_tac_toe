@@ -12,7 +12,6 @@
   --blue: rgba(93, 93, 202, 0.7);
   --red: rgba(218, 14, 14, 0.7);
 }
-
 * {
   box-sizing: border-box;
   user-select: none;
@@ -29,8 +28,8 @@ body {
   position: relative;
   width: 80vmin;
   height: 80vmin;  
-
 }
+
 .players {
   display: flex;
   position: absolute;
@@ -38,12 +37,11 @@ body {
   height: 8vmin;
   width: 60%;
   background: var(--darkest);
-  box-shadow: inset 0 0 10px var(--black);
+  box-shadow: inset 0 0 20px var(--black);
   border-radius: 2rem;
   transition: all .5s;
   z-index: -1;
 }
-
 .players:first-child {
   transform: translateY(-50%);
 }
@@ -58,7 +56,11 @@ body {
 }
 .players.turn {
   outline: 3px solid var(--pink);
-  box-shadow: 0 0 6vmin var(--pink);
+  box-shadow: inset 0 0 4vmin var(--pink);
+}
+.players.flicker {
+  animation: flicker .75s ease-in-out;
+  background-color: var(--darker);
 }
 
 .pieces {
@@ -88,11 +90,6 @@ body {
 }
 
 
-
-main .players:last-child {
-  top: auto;
-  bottom: 0;
-}
 main {
   top: 0;
   left: 0;
@@ -103,7 +100,10 @@ main {
   border-radius: 2rem;
   transition: background-color 1s
 }
-
+main .players:last-child {
+  top: auto;
+  bottom: 0;
+}
 main.flicker {
   box-shadow: inset 0 0 20px #fff;
   animation: flicker .75s ease-in-out;
@@ -118,6 +118,12 @@ main.flicker {
   gap: 3%;
   transition: all .75s;
 }
+.game-container.initial {
+  position: absolute;
+  grid-template-columns: auto;
+  grid-template-rows: auto;
+  height: 40%;
+}
 .cells {
   position: relative;
   display: flex;
@@ -126,34 +132,23 @@ main.flicker {
   align-items: center;
   justify-content: center;
   font-size: 0;
-  border: 3px solid var(--darkest);
+  border: .5vmin solid var(--darkest);
   border-radius: 1rem;
   background: var(--light);
   box-shadow: 5px 5px 5px var(--darkest);
-
 }
-
 .cells.selected {
   background: var(--darkest);
   font-size: 14vmin;
 }
-
-.game-container.initial {
-  position: absolute;
-  grid-template-columns: auto;
-  grid-template-rows: auto;
-  height: 40%;
-}
-
 .cells.initial {
   display: none;
 }
-
 .cells:hover {
   color: var(--lighter);
   border: 8px solid var(--pink);
   background: var(--darkest);
-  box-shadow: -10px 10px 5px var(--darkest);
+  box-shadow: inset 0 0 1vmin var(--pink);
   animation: wiggly 1s ease infinite;
   transform-origin: center;
 }
@@ -199,7 +194,9 @@ main.flicker {
   justify-content: center;
   align-items: center;
 }
-
+.disable {
+  pointer-events: none;
+}
 @keyframes flicker {
   0% {
     background-color: rgba(0, 0, 0);
@@ -211,16 +208,13 @@ main.flicker {
     background-color: rgba(0, 0, 0);
   }
   50% {
-    background-color: rgba(100, 100, 100);
+    background-color: rgba(50, 50, 50);
+  }
+  70% {
+    background-color: rgba(75, 75, 75);
   }
   80% {
-    background-color: rgba(150, 150, 150);
-  }
-  90% {
     background-color: rgba(20, 20, 20);
-  }
-  100% {
-    background-color: rgba(200, 200, 200);
   }
 }
 

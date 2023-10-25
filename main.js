@@ -1,4 +1,10 @@
-
+// todo: track score
+// todo: remove pieces on cell selection
+// todo: finish updateGameState
+// todo: finish win logic
+// todo: handle clicks on occupied cells
+// todo: game ending/restarting
+// todo: add reset options
 
 //*----- constants -----*//
 
@@ -6,12 +12,12 @@ const gameState = {
   a1: 0,
   a2: 0,
   a3: 0,
-  a4: 0,
-  a5: 0,
-  a6: 0,
-  a7: 0,
-  a8: 0,
-  a9: 0
+  b1: 0,
+  b2: 0,
+  b3: 0,
+  c1: 0,
+  c2: 0,
+  c3: 0
 }
 
 //*----- state variables -----*//
@@ -24,6 +30,7 @@ let oLeft;
 
 //*----- cached elements  -----*//
 
+body = document.querySelector('body')
 cells = document.querySelectorAll('.cells')
 gameContainer = document.querySelector('.game-container')
 mainContainer = document.querySelector('.main-container')
@@ -49,11 +56,11 @@ function addCellListeners() {
 
 init();
 
-// set initial starting positions
+// set initial onload positions
 function init() {
 
   // loop cells
-  // add starting properties
+  // add starting properties to each cell and container
   cells.forEach((cell) => {
     cell.classList.add('initial')
     cell.classList.add('selected')
@@ -86,6 +93,8 @@ function init() {
 
 // initialize start of game
 function initGame() {
+
+  // remove starting properties
   cells.forEach((cell) => {
     cell.classList.remove('initial')
     cell.classList.remove('selected')
@@ -97,10 +106,17 @@ function initGame() {
   firstCell.innerText = ''
   firstCell.removeEventListener('click', initGame)
   
+  // add opening flicker to main
   main.classList.add('flicker')
+
   setTimeout(() => {
-    main.style.backgroundColor = '#888'
+    main.style.backgroundColor = '#555'
   }, 1100)
+
+  // disable interaction during animations
+  setTimeout(() => {
+    body.classList.remove('disable')
+  }, 2500)
 
   setTurn()
   addCellListeners()
@@ -148,26 +164,36 @@ function renderCurrentPlayer(turn) {
   const playerx = document.querySelector('.players:first-child')
   const playero = document.querySelector('.players:last-child')
   
-  // determine and set border colors
-  if (turn > 0) {
-    playero.classList.remove('turn')
-    playerx.classList.add('turn')
-  } else {
-    playerx.classList.remove('turn')
-    playero.classList.add('turn')
-  }
+  // determine and set border colors based on turn
+  setTimeout(() => {
+    if (turn > 0) {
+      playerx.classList.add('turn')
+      playerx.classList.add('flicker')
+      playero.classList.remove('turn')
+      playero.classList.remove('flicker')
+    } else {
+      playero.classList.add('turn')
+      playero.classList.add('flicker')
+      playerx.classList.remove('turn')
+      playerx.classList.remove('flicker')
+    }
+  }, 1000)
+
+  // re-enable user interaction
+  setTimeout(() => {
+    body.classList.remove('disable')
+  }, 1500)
 }
 
 // update selected cell
 function renderSelectedCell(cell) {
+  // set current color based on turn
   const currentColor = (turn < 0) ? "red" : "blue"
   
-  // determine color by turn
-  // timing for animations
+  // timing for selection animations
   setTimeout(function() {
     cell.classList.add('selected')
   }, 10)
-  
   setTimeout(function() {
     cell.style.borderColor = currentColor
   }, 500)
@@ -176,7 +202,13 @@ function renderSelectedCell(cell) {
 
 //*----- handlers -----*//
 
-function handleTurn(cell, event) {
+// todo: implement updates
+function updateGameState(cell) {
+  console.log(cell.id)
+}
+
+// handle each turn based on clicked cell
+function handleTurn(cell) {
   const currentPiece = (turn > 0) ? 'X' : 'O'
   const currentClass = (turn > 0) ? 'x' : 'o'
   setTurn()
@@ -189,14 +221,17 @@ function handleTurn(cell, event) {
     cell.appendChild(newEl)
   }
 
-
-  
   renderSelectedCell(cell)
+  updateGameState(cell)
+  isWin()
 }
 
 // set up next turn
 function setTurn() {
-  // if first round, select random player
+  // disable interaction
+  body.classList.add('disable')
+
+  // if new game, select random start player
   if (!turn) turn = Math.random()
 
   // determine next turn to set up
@@ -207,4 +242,43 @@ function setTurn() {
   turn = (turn > .5) ? -1 : 1
   
   renderCurrentPlayer(turn)
+}
+
+
+// check for winning conditions
+function isWin() {
+
+  // build array of possible winning states 
+  const winStateInit = [
+    ['a1', 'a2', 'a3'],
+    ['b1', 'b2', 'b3'],
+    ['c1', 'c2', 'c3'],
+    ['a1', 'b1', 'c1'],
+    ['a2', 'b2', 'c2'],
+    ['a3', 'b3', 'c3'],
+    ['a1', 'b2', 'c3'],
+    ['a3', 'b2', 'c1']
+  ]
+
+  // create a copy of winning states for alteration
+  let winState = [...winStateInit]
+
+  // loop each winning state block
+  for (const block of winState) {
+    // loop each cell within the block
+    for (const cell of block) {
+      // loop each cell state in gameState
+      for (const state in gameState) {
+        // if cell and state match, replace winState cell with current value
+        if (cell === state) {
+          const stateBlock = winState[winState.indexOf(block)]
+          const cellPos = stateBlock.indexOf(cell)
+          stateBlock[cellPos] = gameState[cell]
+        }
+      }
+    }
+  }
+  // todo: determine if any blocks equal 3 or -3 for win
+  // todo: determine if no turns left for draw
+  console.log(winState)
 }
