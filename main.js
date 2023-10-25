@@ -1,7 +1,7 @@
-// todo: track score
-// todo: remove pieces on cell selection
 // todo: finish updateGameState
 // todo: finish win logic
+// todo: remove pieces on cell selection
+// todo: track score
 // todo: handle clicks on occupied cells
 // todo: game ending/restarting
 // todo: add reset options
@@ -113,7 +113,7 @@ function initGame() {
     main.style.backgroundColor = '#555'
   }, 1100)
 
-  // disable interaction during animations
+  // enable interaction during animations
   setTimeout(() => {
     body.classList.remove('disable')
   }, 2500)
@@ -199,12 +199,29 @@ function renderSelectedCell(cell) {
   }, 500)
 }
 
+function renderWinner(winner) {
+  switch (winner) {
+    case 'x':
+      console.log('X WINS!')
+      main.classList.add('winner')
+      main.classList.add('x')
+      break
+    case 'o':
+      console.log('O WINS!')
+      main.classList.add('winner')
+      main.classList.add('o')
+      break
+    default:
+      console.log('DRAW!')
+      main.classList.add('draw')
+  }
+}
 
 //*----- handlers -----*//
 
 // todo: implement updates
 function updateGameState(cell) {
-  console.log(cell.id)
+  gameState[cell.id] = turn
 }
 
 // handle each turn based on clicked cell
@@ -223,7 +240,7 @@ function handleTurn(cell) {
 
   renderSelectedCell(cell)
   updateGameState(cell)
-  isWin()
+  handleBoard()
 }
 
 // set up next turn
@@ -246,7 +263,7 @@ function setTurn() {
 
 
 // check for winning conditions
-function isWin() {
+function handleBoard() {
 
   // build array of possible winning states 
   const winStateInit = [
@@ -263,6 +280,7 @@ function isWin() {
   // create a copy of winning states for alteration
   let winState = [...winStateInit]
 
+  // add current gamestate values to matching winstate elements
   // loop each winning state block
   for (const block of winState) {
     // loop each cell within the block
@@ -280,5 +298,30 @@ function isWin() {
   }
   // todo: determine if any blocks equal 3 or -3 for win
   // todo: determine if no turns left for draw
-  console.log(winState)
+
+  let boardSum = 0
+  for (state of winState) {
+    let sum = 0
+    for (cell of state) {
+      sum += cell
+    }
+    if (sum === 3 || sum === -3) {
+      const winner = (turn > 0) ? 'o' : 'x'
+      renderWinner(winner)
+      break
+    }
+    if (getBoardSum() === 9) {
+      renderWinner('draw')
+    }
+
+    function getBoardSum() {
+      let boardSum = 0
+      for (const val in gameState) {
+        if (gameState[val] !== 0) {
+          boardSum += 1
+        }
+      }
+      return(boardSum)
+    }
+  }
 }
