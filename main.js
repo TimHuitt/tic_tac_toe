@@ -1,10 +1,10 @@
 
 // todo: remove pieces on cell selection
-// todo: track score
-// todo: handle clicks on occupied cells
-// todo: game ending/restarting
-// todo: add reset options
-
+// todo: add reset option (&#8592)
+// todo: 
+// setTimeout(() => {
+//   unrenderPiece()
+// }, 1000)
 //*----- constants -----*//
 
 const gameState = {
@@ -27,27 +27,27 @@ const gameWins = {
 //*----- state variables -----*//
 
 let turn; // -1 / 0 / 1 (= X / empty / O = red / empty / blue)
-let xLeft;
-let oLeft;
+let xPiece;
+let oPiece;
 
 //*----- cached elements  -----*//
 
-body = document.querySelector('body')
-cells = document.querySelectorAll('.cells')
-gameContainer = document.querySelector('.game-container')
-mainContainer = document.querySelector('.main-container')
-main = document.querySelector('main')
-firstCell = document.querySelector('#a1')
-xPieces = document.querySelectorAll('.pieces.x > span')
-oPieces = document.querySelectorAll('.pieces.o > span')
-wins = document.querySelectorAll('.wins')
-players = document.querySelectorAll('.players')
+const body = document.querySelector('body')
+const cells = document.querySelectorAll('.cells')
+const gameContainer = document.querySelector('.game-container')
+const mainContainer = document.querySelector('.main-container')
+const main = document.querySelector('main')
+const firstCell = document.querySelector('#a1')
+const winsx = document.querySelector('.wins.x')
+const winso = document.querySelector('.wins.o')
+const players = document.querySelectorAll('.players')
+let xPieces = document.querySelectorAll('.pieces.x > span')
+let oPieces = document.querySelectorAll('.pieces.o > span')
 
 //*----- event listeners -----*//
 
 // add listener to main container
 function addCellListeners() {
-  
   main.addEventListener('click', function(event) {
     if (event.target.id) handleTurn(event.target, event)
   })
@@ -76,13 +76,15 @@ function init() {
   oPieces.forEach((piece) => {
     piece.classList.add('initial')
   })
-  wins.forEach((score) => {
-    score.classList.add('initial')
-  })
+
   players.forEach((player) => {
     player.classList.add('initial')
   })
 
+  winsx.innerText = 0
+  winso.innerText = 0
+  xPiece = 0
+  oPiece = 0
   mainContainer.classList.add('initial')
 
   // move/grow cell a1 into start button position
@@ -107,11 +109,14 @@ function initGame() {
   firstCell.innerText = ''
   main.removeEventListener('click', initGame)
   
+  winsx.innerText = gameWins['x']
+  winso.innerText = gameWins['o']
+
   // add opening flicker to main
   main.classList.add('flicker')
 
   setTimeout(() => {
-    main.style.backgroundColor = '#555'
+    main.classList.add('bg')
   }, 1100)
 
   // enable interaction during animations
@@ -120,7 +125,7 @@ function initGame() {
   }, 2500)
 
   setTurn()
-  if (gameWins.x + gameWins.o === 0) addCellListeners()
+  if (!(gameWins.x + gameWins.o)) addCellListeners()
   renderPlayers()
 }
 
@@ -148,9 +153,6 @@ function renderPlayers() {
     })
 
     // set up scoreboard
-    wins.forEach((score) => {
-      score.classList.remove('initial')
-    })
 
     // slide player board into place
     players.forEach((player) => {
@@ -203,17 +205,14 @@ function renderSelectedCell(cell) {
 function renderWinner(winner) {
   switch (winner) {
     case 'x':
-      console.log('X WINS!')
       main.classList.add('winner')
       main.classList.add('x')
       break
     case 'o':
-      console.log('O WINS!')
       main.classList.add('winner')
       main.classList.add('o')
       break
     default:
-      console.log('DRAW!')
       main.classList.add('draw')
       break
   }
@@ -224,39 +223,67 @@ function renderWinner(winner) {
   }, 4000)
 }
 
-function setGameEnd(winner) {
-  main.classList.remove('draw')
-  main.classList.remove('winner')
-  main.classList.remove('x')
-  main.classList.remove('o')
-  main.style.backgroundColor = 'rgb(20, 20, 20)'
-  turn = undefined
-  for (cell of cells) {
-    cell.classList.remove('selectedx')
-    cell.classList.remove('selectedo')
-
-    const children = cell.querySelectorAll('.x, .o')
-    children.forEach((child) => {
-      cell.removeChild(child)
+function unrenderPiece() {
+  if (turn > 0) {
+    oPieces.forEach((piece, idx) => {
+      const pos = oPieces.length - idx - 1
+      if (oPiece === pos) {
+        piece.classList.add('initial')
+      }
     })
+    oPiece++
+  } else {
+    xPieces.forEach((piece, idx) => {
+      const pos = xPieces.length - idx - 1
+      if (xPiece === pos) {
+        piece.classList.add('initial')
+      }
+    })
+    xPiece++
   }
-  
-  setGameState(undefined, winner)
 }
 
 //*----- handlers -----*//
 
+// check for winning conditions
+function handleBoard() {
+  // build array of possible winning states 
+  const winPos = [
+    ['a1', 'a2', 'a3'],
+    ['b1', 'b2', 'b3'],
+    ['c1', 'c2', 'c3'],
+    ['a1', 'b1', 'c1'],
+    ['a2', 'b2', 'c2'],
+    ['a3', 'b3', 'c3'],
+    ['a1', 'b2', 'c3'],
+    ['a3', 'b2', 'c1']
+  ]
 
-function setGameState(cell, winner) {
-  if (cell) {
-    gameState[cell.id] = turn
-  } else {
-    for (state in gameState) {
-      gameState[state] = 0
+  // create a copy of winning states for alteration 
+  let winner = ''
+  
+  //check for winning condition
+  winPos.forEach((winConditions) => {
+    let winSum = 0 // and loseSum
+    winConditions.forEach((cell) => {
+      // sum winning combinations
+      winSum += gameState[cell]
+    })
+
+    // if winning condition matched
+    // 3 = o, -3 = x
+    if (winSum === 3 || winSum === -3) {
+      winner = (turn > 0) ? 'o' : 'x'
+      renderWinner(winner)
+      return
     }
-  }
+  })
 
-  gameWins[winner] += 1
+  // check for draw
+  if (getBoardSum() === 9 && !winner) {
+    renderWinner('draw')
+    return
+  }
 }
 
 // handle each turn based on clicked cell
@@ -273,91 +300,16 @@ function handleTurn(cell) {
     cell.appendChild(newEl)
   }
 
+  
+  
+
+  unrenderPiece()
   renderSelectedCell(cell)
   setGameState(cell)
   handleBoard()
 }
 
-// set up next turn
-function setTurn() {
-  // disable interaction
-  body.classList.add('disable')
-
-  // if new game, select random start player
-  if (!turn) turn = Math.random()
-
-  // determine next turn to set up
-  // if turn is -1 (x), 1 (o)
-  // if turn is 1 (o), -1 (x)
-  // if turn is 0-.49 (rng), -1 (x)
-  // if turn is .5-.99 (rng), 1 (o)
-  turn = (turn > .5) ? -1 : 1
-  
-  renderCurrentPlayer(turn)
-}
-
-
-// check for winning conditions
-function handleBoard() {
-  // build array of possible winning states 
-  const winPos = [
-    ['a1', 'a2', 'a3'],
-    ['b1', 'b2', 'b3'],
-    ['c1', 'c2', 'c3'],
-    ['a1', 'b1', 'c1'],
-    ['a2', 'b2', 'c2'],
-    ['a3', 'b3', 'c3'],
-    ['a1', 'b2', 'c3'],
-    ['a3', 'b2', 'c1']
-  ]
-
-  // todo: simplify to string comparison
-
-  // create a copy of winning states for alteration 
-  let winState = [...winPos]
-  let winner = ''
-  // add current gamestate values to matching winstate elements
-  // loop each winning state block
-  for (const block of winState) {
-    // loop each cell within the block
-    for (const cell of block) {
-      // loop each cell state in gameState
-      for (const state in gameState) {
-        // if cell and state match, replace winState cell with current value
-        if (cell === state) {
-          const stateBlock = winState[winState.indexOf(block)]
-          const cellPos = stateBlock.indexOf(cell)
-          stateBlock[cellPos] = gameState[cell]
-        }
-      }
-    }
-  }
-
-  // loop each winning condition
-  for (block of winState) {
-    let sum = 0
-
-    // loop and add each cell of each winning condition
-    for (cell of block) {
-      sum += cell
-    }
-
-    // if winning condition matched
-      // 3 = o, -3 = x
-    if (sum === 3 || sum === -3) {
-      const winner = (turn > 0) ? 'o' : 'x'
-      renderWinner(winner)
-      return
-    // else draw if all cells filled
-    } 
-
-    
-  }
-  if (getBoardSum() === 9 && !winner) {
-    renderWinner('draw')
-    return
-  }
-}
+//*----- getters -----*//
 
 // calculate occupied cells
 function getBoardSum() {
@@ -369,3 +321,61 @@ function getBoardSum() {
   }
   return(boardSum)
 }
+
+//*----- setters -----*//
+
+// update gameState with cell and winner
+// reset by passing no arguments
+function setGameState(cell, winner) {
+  if (cell) {
+    gameState[cell.id] = turn
+  } else {
+    for (state in gameState) {
+      gameState[state] = 0
+    }
+  }
+  gameWins[winner] += 1
+}
+
+// set up next turn
+function setTurn() {
+  // disable interaction
+  body.classList.add('disable')
+
+  // if new game, select random start player
+  if (!turn) {
+    turn = Math.random()
+  }
+
+  // determine next turn to set up
+  // if turn is -1 (x),return 1 (o)
+  // if turn is 1 (o),return -1 (x)
+  // if turn is .5-.99 (rng),return 1 (o)
+  // if turn is 0-.49 (rng),return -1 (x)
+  turn = (turn > .5) ? -1 : 1
+
+  renderCurrentPlayer(turn)
+  
+}
+
+
+function setGameEnd(winner) {
+  main.classList.remove('draw')
+  main.classList.remove('winner')
+  main.classList.remove('x')
+  main.classList.remove('o')
+  main.classList.remove('bg')
+  turn = undefined
+  for (cell of cells) {
+    cell.classList.remove('selectedx')
+    cell.classList.remove('selectedo')
+
+    const children = cell.querySelectorAll('.x, .o')
+    children.forEach((child) => {
+      cell.removeChild(child)
+    })
+  }
+  
+  setGameState(undefined, winner)
+}
+
