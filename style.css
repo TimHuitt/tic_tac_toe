@@ -3,14 +3,14 @@
 :root {
   --lighter: #dbd7d7;
   --light: #5b5d63;
-  --dark: #555;
   --darker: #333;
+  --dark: #555;
   --darkest: #222;
   --black: black;
 
   --pink: #a651a3;
   --darkpink: #733871;
-  --blue: rgba(93, 93, 202, 0.7);
+  --blue: rgba(48, 48, 240, 0.7);
   --red: rgba(218, 14, 14, 0.7);
 }
 * {
@@ -58,7 +58,7 @@ body {
 .players.turn {
   outline: 3px solid var(--pink);
   box-shadow: 0 0 6vmin var(--pink);
-  background-color: var(--black);
+  background-color: var(--darkest);
 }
 .players.turn::after {
   position: absolute;
@@ -103,7 +103,7 @@ main {
   left: 0;
   width: 75%;
   height: 75%;
-  background-color: var(--darker);
+  background-color: var(--dark);
   box-shadow: inset 0 0 10px #000;
   border-radius: 1.5rem;
   transition: background-color 1s
@@ -146,7 +146,7 @@ main.winner {
   animation: winner 2s ease-in-out 2;
 }
 main.bg {
-  background-color: var(--dark);
+  background-color: var(--darker);
 }
 .game-container {
   display: grid;
@@ -181,10 +181,10 @@ main.bg {
   font-size: 14vmin;
 }
 .cells.selectedx {
-  border-color: var(--red);
+  border: .5vmin solid var(--red);
 }
 cells.selectedo {
-  border-color: var(--blue)
+  border: .5vmin solid var(--blue);
 }
 .cells.initial {
   display: none;

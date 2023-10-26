@@ -1,10 +1,7 @@
 
-// todo: remove pieces on cell selection
-// todo: add reset option (&#8592)
-// todo: 
-// setTimeout(() => {
-//   unrenderPiece()
-// }, 1000)
+// todo: fix o border color
+// todo: remove turn change after win/draw
+
 //*----- constants -----*//
 
 const gameState = {
@@ -29,6 +26,7 @@ const gameWins = {
 let turn; // -1 / 0 / 1 (= X / empty / O = red / empty / blue)
 let xPiece;
 let oPiece;
+let winner;
 
 //*----- cached elements  -----*//
 
@@ -85,6 +83,7 @@ function init() {
   winso.innerText = 0
   xPiece = 0
   oPiece = 0
+  winner = ''
   mainContainer.classList.add('initial')
 
   // move/grow cell a1 into start button position
@@ -117,7 +116,7 @@ function initGame() {
 
   setTimeout(() => {
     main.classList.add('bg')
-  }, 1100)
+  }, 1500)
 
   // enable interaction during animations
   setTimeout(() => {
@@ -127,6 +126,10 @@ function initGame() {
   setTurn()
   if (!(gameWins.x + gameWins.o)) addCellListeners()
   renderPlayers()
+
+  setTimeout(() => {
+    unrenderPiece('initial')
+  }, 2000)
 }
 
 //*----- renderers -----*//
@@ -168,19 +171,22 @@ function renderCurrentPlayer(turn) {
   const playero = document.querySelector('.players:last-child')
   
   // determine and set border colors based on turn
-  setTimeout(() => {
-    if (turn > 0) {
-      playerx.classList.add('turn')
-      playerx.classList.add('flicker')
-      playero.classList.remove('turn')
-      playero.classList.remove('flicker')
-    } else {
-      playero.classList.add('turn')
-      playero.classList.add('flicker')
-      playerx.classList.remove('turn')
-      playerx.classList.remove('flicker')
-    }
-  }, 1000)
+  
+  if (winner !== 1 && winner != -1 && getBoardSum !== 9) {
+    setTimeout(() => {
+      if (turn > 0) {
+        playerx.classList.add('turn')
+        playerx.classList.add('flicker')
+        playero.classList.remove('turn')
+        playero.classList.remove('flicker')
+      } else {
+        playero.classList.add('turn')
+        playero.classList.add('flicker')
+        playerx.classList.remove('turn')
+        playerx.classList.remove('flicker')
+      }
+    }, 1000)
+  }
 
   // re-enable user interaction
   setTimeout(() => {
@@ -203,6 +209,7 @@ function renderSelectedCell(cell) {
 }
 
 function renderWinner(winner) {
+  let delay = 4000
   switch (winner) {
     case 'x':
       main.classList.add('winner')
@@ -214,16 +221,18 @@ function renderWinner(winner) {
       break
     default:
       main.classList.add('draw')
+      delay = 2000
       break
   }
   setTimeout(() => {
     setGameEnd(winner)
     init()
     initGame()
-  }, 4000)
+  }, delay)
 }
 
-function unrenderPiece() {
+function unrenderPiece(init) {
+  
   if (turn > 0) {
     oPieces.forEach((piece, idx) => {
       const pos = oPieces.length - idx - 1
@@ -258,9 +267,6 @@ function handleBoard() {
     ['a1', 'b2', 'c3'],
     ['a3', 'b2', 'c1']
   ]
-
-  // create a copy of winning states for alteration 
-  let winner = ''
   
   //check for winning condition
   winPos.forEach((winConditions) => {
