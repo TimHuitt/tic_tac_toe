@@ -80,6 +80,7 @@ function init() {
     player.classList.add('initial')
   })
 
+  if (xPiece === undefined) reset.classList.add('initial')
   winsx.innerText = 0
   winso.innerText = 0
   xPiece = 0
@@ -88,7 +89,7 @@ function init() {
   disableTime = 2000
   main.classList.remove('flicker')
   mainContainer.classList.add('initial')
-  reset.classList.add('initial')
+  
 
   // remove styles and reset
   main.classList.remove('draw')
@@ -159,7 +160,6 @@ function initGame() {
   }, 500)
 
   setTimeout(() => {
-    reset.classList.remove('initial')
     disableTime = 750
   }, 2000)
 
@@ -413,6 +413,7 @@ function setTurn() {
 
 function resetGame() {
   resetting = true
+  xPiece = undefined
   gameWins.x = 0
   gameWins.o = 0
   main.removeEventListener('click', handleTurn)
