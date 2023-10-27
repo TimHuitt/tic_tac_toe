@@ -28,7 +28,8 @@ body {
 .main-container {
   position: relative;
   width: 80vmin;
-  height: 80vmin;  
+  height: 80vmin;
+  pointer-events: auto;
 }
 
 .players {
@@ -58,7 +59,7 @@ body {
 .players.turn {
   outline: 3px solid var(--pink);
   box-shadow: 0 0 6vmin var(--pink);
-  background-color: var(--darkest);
+  background-color: var(--black);
 }
 .players.turn::after {
   position: absolute;
@@ -97,13 +98,29 @@ body {
   font-size: 0px;
   transform: translateY(-100%);
 }
+.reset-button {
+  content: "reset";
+  position: absolute;
+  right: 0;
+  display: flex;
+  height: 8vmin;
+  width: 8vmin;
+  padding-bottom: .8vmin;
+  color: var(--lighter);
+  font-size: 3vmin;
+  border-radius: 50%;
+  background: var(--darker);
+  align-items: center;
+  justify-content: center;
+  transition: right 1s;
+}
 
 main {
   top: 0;
   left: 0;
   width: 75%;
   height: 75%;
-  background-color: var(--dark);
+  background-color: var(--darker);
   box-shadow: inset 0 0 10px #000;
   border-radius: 1.5rem;
   transition: background-color 1s
@@ -143,11 +160,12 @@ main.flicker {
   animation: flicker .75s ease-in-out;
 }
 main.winner {
-  animation: winner 2s ease-in-out 2;
+  animation: winner 2s ease-in-out;
 }
 main.bg {
   background-color: var(--darker);
 }
+
 .game-container {
   display: grid;
   width: 90%;
@@ -163,6 +181,7 @@ main.bg {
   grid-template-rows: auto;
   height: 40%;
 }
+
 .cells {
   position: relative;
   display: flex;
@@ -174,7 +193,7 @@ main.bg {
   border: .5vmin solid var(--darkest);
   border-radius: 1rem;
   background: var(--light);
-  box-shadow: 5px 5px 5px var(--darkest);
+  box-shadow: 5px 5px 10px var(--darkest);
 }
 .cells.selected {
   background: var(--darkest);
@@ -183,12 +202,13 @@ main.bg {
 .cells.selectedx {
   border: .5vmin solid var(--red);
 }
-cells.selectedo {
-  border: .5vmin solid var(--blue);
+.cells.selectedo {
+  border: .5vmin solid blue;
 }
 .cells.initial {
   display: none;
 }
+.reset-button:hover,
 .cells:hover {
   color: var(--lighter);
   border: 8px solid var(--pink);
@@ -201,14 +221,12 @@ cells.selectedo {
   border: 8px solid var(--darkpink);
   background: #444;
 }
-
 .cells > .x,
 .cells > .o {
   position: absolute;
   font-family: "Playpen Sans", cursive;
   transition: font-size 1s;
 }
-
 .x {
   color: var(--red);
   text-shadow: 0 0 20px var(--red);
@@ -232,6 +250,9 @@ cells.selectedo {
   font-size: 2px;
 }
 
+.reset-button.initial {
+  right: -100vw;
+}
 .center {
   display: flex;
   justify-content: center;
@@ -261,30 +282,28 @@ cells.selectedo {
     background-color: rgba(20, 20, 20);
   }
 }
-
 @keyframes winner {
   0% {
     background-color: #ff0000;
-    box-shadow: 0 0 40px #ff0000;
+    box-shadow: 0 0 60px #ff0000;
   }
-  25% {
+  20% {
     background-color: #013cff;
-    box-shadow: 0 0 40px #013cff;
+    box-shadow: 0 0 60px #013cff;
   }
-  50% {
+  40% {
     background-color: #e6ff02;
-    box-shadow: 0 0 40px #e6ff02;
+    box-shadow: 0 0 60px #e6ff02;
   }
-  75% {
+  60% {
     background-color: #ff00ea;
-    box-shadow: 0 0 40px #ff00ea;
+    box-shadow: 0 0 60px #ff00ea;
   }
-  100% {
+  80% {
     background-color: #00ff4c;
-    box-shadow: 0 0 40px #00ff4c;
+    box-shadow: 0 0 60px #00ff4c;
   }
 }
-
 @keyframes wiggly {
   0% {
     transform: rotate(0deg);

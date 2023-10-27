@@ -1,9 +1,7 @@
 
-// todo: fix o border color
-// todo: remove turn change after win/draw
-
 //*----- constants -----*//
-
+// state of game board cells 
+// -1 = x / 0 = empty / 1 = o
 const gameState = {
   a1: 0,
   a2: 0,
@@ -15,7 +13,7 @@ const gameState = {
   c2: 0,
   c3: 0
 }
-
+// track player wins
 const gameWins = {
   x: 0,
   o: 0
@@ -23,15 +21,18 @@ const gameWins = {
 
 //*----- state variables -----*//
 
-let turn; // -1 / 0 / 1 (= X / empty / O = red / empty / blue)
-let xPiece;
+let turn;
+let xPiece; 
 let oPiece;
 let winner;
+let resetting;
+let disableTime;
 
 //*----- cached elements  -----*//
 
 const body = document.querySelector('body')
 const cells = document.querySelectorAll('.cells')
+const reset = document.querySelector('.reset-button')
 const gameContainer = document.querySelector('.game-container')
 const mainContainer = document.querySelector('.main-container')
 const main = document.querySelector('main')
@@ -46,10 +47,10 @@ let oPieces = document.querySelectorAll('.pieces.o > span')
 
 // add listener to main container
 function addCellListeners() {
-  main.addEventListener('click', function(event) {
-    if (event.target.id) handleTurn(event.target, event)
-  })
+  main.addEventListener('click', handleTurn)
 }
+
+reset.addEventListener('click', resetGame)
 
 //*----- initializations -----*//
 
@@ -57,7 +58,6 @@ init();
 
 // set initial onload positions
 function init() {
-  
   // loop cells
   // add starting properties to each cell and container
   cells.forEach((cell) => {
@@ -75,6 +75,7 @@ function init() {
     piece.classList.add('initial')
   })
 
+  // hide player boards
   players.forEach((player) => {
     player.classList.add('initial')
   })
@@ -84,18 +85,41 @@ function init() {
   xPiece = 0
   oPiece = 0
   winner = ''
+  disableTime = 2000
+  main.classList.remove('flicker')
   mainContainer.classList.add('initial')
+  reset.classList.add('initial')
+
+  // remove styles and reset
+  main.classList.remove('draw')
+  main.classList.remove('winner')
+  main.classList.remove('x')
+  main.classList.remove('o')
+  main.classList.remove('bg')
+  turn = undefined
+  
+  // clear cell styles and elements
+  for (cell of cells) {
+    cell.classList.remove('selectedx')
+    cell.classList.remove('selectedo')
+
+    const children = cell.querySelectorAll('.x, .o')
+    children.forEach((child) => {
+      cell.removeChild(child)
+    })
+  }
 
   // move/grow cell a1 into start button position
   firstCell.classList.remove('initial')
   firstCell.classList.add('start')
   firstCell.innerText = 'Start Game'
   main.addEventListener('click', initGame)
+
+  setGameState()
 }
 
 // initialize start of game
 function initGame() {
-
   // remove starting properties
   cells.forEach((cell) => {
     cell.classList.remove('initial')
@@ -103,11 +127,13 @@ function initGame() {
     gameContainer.classList.remove('initial')  
   })
 
-  firstCell.classList.remove('start')
+  // show gameboard elements
   mainContainer.classList.remove('initial')
   firstCell.innerText = ''
+  firstCell.classList.remove('start')
   main.removeEventListener('click', initGame)
   
+  // set scoreboard
   winsx.innerText = gameWins['x']
   winso.innerText = gameWins['o']
 
@@ -120,49 +146,64 @@ function initGame() {
 
   // enable interaction during animations
   setTimeout(() => {
-    body.classList.remove('disable')
-  }, 2500)
+    resetting = false
+    main.classList.remove('disable')
+  }, disableTime)
 
-  setTurn()
-  if (!(gameWins.x + gameWins.o)) addCellListeners()
-  renderPlayers()
+  addCellListeners()
+  
+  // show other elements
+  setTimeout(() => {
+    renderPlayers()
+    reset.classList.remove('initial')
+  }, 500)
 
   setTimeout(() => {
-    unrenderPiece('initial')
+    reset.classList.remove('initial')
+    disableTime = 750
   }, 2000)
+
+  setTurn()
 }
 
 //*----- renderers -----*//
 
 // initial set up of player boards
 function renderPlayers() {
-  xBaseTime = 0
-  oBaseTime = 0
-  setTimeout(() => {
-    
-    // loop x's and o's in player board
-    // move into place sequentially
-    xPieces.forEach((piece) => {
-      setTimeout(() => {
-        piece.classList.remove('initial')
-      }, 200 + xBaseTime)
-      xBaseTime += 200
-    })
-    oPieces.forEach((piece) => {
+  let xBaseTime = 0
+  let oBaseTime = 0
+  let pieces;
+
+  // loop x's and o's pieces in player board
+  // move into view sequentially
+  // display 1 less if other players turn
+  xPieces.forEach((piece, idx) => {
+    if (turn === -1 && idx === xPieces.length - 1) {
+      xPiece++
+     return
+    }
+    setTimeout(() => {
+      piece.classList.remove('initial')
+    }, 200 + xBaseTime)
+    xBaseTime += 200
+  })
+
+  oPieces.forEach((piece, idx) => {
+    if (turn === 1 && idx === oPieces.length - 1) {
+       oPiece++
+      return
+    }
       setTimeout(() => {
         piece.classList.remove('initial')
       }, 200 + oBaseTime)
       oBaseTime += 200
-    })
+  })
 
-    // set up scoreboard
+  // slide player boards into place
+  players.forEach((player) => {
+    player.classList.remove('initial')
+  })
 
-    // slide player board into place
-    players.forEach((player) => {
-      player.classList.remove('initial')
-    })
-
-  }, 500)
 }
 
 // set up player boards
@@ -170,8 +211,7 @@ function renderCurrentPlayer(turn) {
   const playerx = document.querySelector('.players:first-child')
   const playero = document.querySelector('.players:last-child')
   
-  // determine and set border colors based on turn
-  
+  // determine and set cell styles
   if (winner !== 1 && winner != -1 && getBoardSum !== 9) {
     setTimeout(() => {
       if (turn > 0) {
@@ -190,8 +230,8 @@ function renderCurrentPlayer(turn) {
 
   // re-enable user interaction
   setTimeout(() => {
-    body.classList.remove('disable')
-  }, 1500)
+    main.classList.remove('disable')
+  }, disableTime)
 }
 
 // update selected cell
@@ -208,8 +248,9 @@ function renderSelectedCell(cell) {
   }, 500)
 }
 
+// make win state changes
 function renderWinner(winner) {
-  let delay = 4000
+  let delay = 2000
   switch (winner) {
     case 'x':
       main.classList.add('winner')
@@ -225,14 +266,16 @@ function renderWinner(winner) {
       break
   }
   setTimeout(() => {
-    setGameEnd(winner)
-    init()
-    initGame()
+    if (!resetting) {
+      if (winner) setGameState(undefined, winner)
+      init()
+      initGame()
+    }
   }, delay)
 }
 
-function unrenderPiece(init) {
-  
+// remove a piece from the players 'bank'
+function removePiece(init) {
   if (turn > 0) {
     oPieces.forEach((piece, idx) => {
       const pos = oPieces.length - idx - 1
@@ -293,26 +336,31 @@ function handleBoard() {
 }
 
 // handle each turn based on clicked cell
-function handleTurn(cell) {
-  const currentPiece = (turn > 0) ? 'X' : 'O'
-  const currentClass = (turn > 0) ? 'x' : 'o'
-  setTurn()
+function handleTurn(event) {
+  let cell = event.target
 
-  // add x or o to selected cell
-  if (cell.querySelector('div') === null) {
-    const newEl = document.createElement('div')
-    newEl.classList.add(currentClass)
-    newEl.innerText = currentPiece
-    cell.appendChild(newEl)
+  // determine cell style
+  if (turn > 0) cell.classList.add('selectedx')
+  if (turn < 0) cell.classList.add('selectedo')
+
+  if (event.target.id) {
+    const currentPiece = (turn > 0) ? 'X' : 'O'
+    const currentClass = (turn > 0) ? 'x' : 'o'
+
+    // add x or o to selected cell
+    if (cell.querySelector('div') === null) {
+      const newEl = document.createElement('div')
+      newEl.classList.add(currentClass)
+      newEl.innerText = currentPiece
+      cell.appendChild(newEl)
+    }
+
+    setTurn()
+    removePiece()
+    renderSelectedCell(cell)
+    setGameState(cell)
+    handleBoard()
   }
-
-  
-  
-
-  unrenderPiece()
-  renderSelectedCell(cell)
-  setGameState(cell)
-  handleBoard()
 }
 
 //*----- getters -----*//
@@ -346,7 +394,7 @@ function setGameState(cell, winner) {
 // set up next turn
 function setTurn() {
   // disable interaction
-  body.classList.add('disable')
+  main.classList.add('disable')
 
   // if new game, select random start player
   if (!turn) {
@@ -361,27 +409,12 @@ function setTurn() {
   turn = (turn > .5) ? -1 : 1
 
   renderCurrentPlayer(turn)
-  
 }
 
-
-function setGameEnd(winner) {
-  main.classList.remove('draw')
-  main.classList.remove('winner')
-  main.classList.remove('x')
-  main.classList.remove('o')
-  main.classList.remove('bg')
-  turn = undefined
-  for (cell of cells) {
-    cell.classList.remove('selectedx')
-    cell.classList.remove('selectedo')
-
-    const children = cell.querySelectorAll('.x, .o')
-    children.forEach((child) => {
-      cell.removeChild(child)
-    })
-  }
-  
-  setGameState(undefined, winner)
+function resetGame() {
+  resetting = true
+  gameWins.x = 0
+  gameWins.o = 0
+  main.removeEventListener('click', handleTurn)
+  init()
 }
-
